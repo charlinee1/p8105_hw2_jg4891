@@ -10,7 +10,7 @@ options(tibble.print_min = 5)
 
 ```
 ## Problem 1
-```{r}
+```{r pol_month}
 pols_df = read_csv("fivethirtyeight_datasets/pols-month.csv") %>% 
 janitor::clean_names() %>% 
 separate(mon, into = c("year", "month", "day"), sep = '-') %>% 
@@ -27,5 +27,19 @@ mutate(president=
   ) %>% 
 select(-prez_gop, -prez_dem, -day )
 ```
+```{r snp}
+snp_df = read_csv("fivethirtyeight_datasets/snp.csv") %>% 
+janitor::clean_names() %>% 
+separate(date, into = c("month", "day", "year"), sep = '/') %>% 
+mutate(
+    month = as.integer(month),
+    day   = as.integer(day),
+    year  = as.integer(year)
+  ) %>% 
+  mutate(year = ifelse(year < 50, 2000 + year, 1900 + year))
+
+```
+
+
 
 
