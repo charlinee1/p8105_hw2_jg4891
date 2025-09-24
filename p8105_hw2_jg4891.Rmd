@@ -4,7 +4,7 @@ output: github_document
 date: "2025-09-24"
 ---
 
-```{r}
+```{r setup}
 library(tidyverse)
 options(tibble.print_min = 5)
 
@@ -36,9 +36,29 @@ mutate(
     day   = as.integer(day),
     year  = as.integer(year)
   ) %>% 
+  mutate(
+    month = factor(month.name[as.integer(month)], 
+                   levels = month.name, 
+                   ordered = TRUE)
+  ) %>% 
   mutate(year = ifelse(year < 50, 2000 + year, 1900 + year)) %>% 
+  
   select(-day) %>%         # sort by year then month
   select(year, month, everything())
+```
+```{r unemploy}
+unemploy_df <- read_csv("fivethirtyeight_datasets/unemployment.csv") %>% 
+janitor::clean_names() %>% 
+pivot_longer(
+    cols = jan:dec,                  # columns to pivot
+    names_to = "month",              # new column with month names
+    values_to = "unemployment_percent" # new column with values
+  ) %>% 
+  
+  mutate(
+    month = month.name[match(tolower(month), tolower(month.abb))],
+    month = factor(month, levels = month.name, ordered = TRUE)
+  )
 ```
 
 
