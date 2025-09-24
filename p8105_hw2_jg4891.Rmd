@@ -11,39 +11,34 @@ options(tibble.print_min = 5)
 ```
 ## Problem 1
 ```{r pol_month}
-pols_df = read_csv("fivethirtyeight_datasets/pols-month.csv") %>% 
-janitor::clean_names() %>% 
-separate(mon, into = c("year", "month", "day"), sep = '-') %>% 
-mutate(
-    month = factor(month.name[as.integer(month)], 
-                   levels = month.name, 
-                   ordered = TRUE)
-  ) %>% 
-mutate(president=
-         case_when(
+pols_df <- read_csv("fivethirtyeight_datasets/pols-month.csv") %>%
+  janitor::clean_names() %>%
+  separate(mon, into = c("year", "month", "day"), sep = '-') %>%
+  mutate(
+    year  = as.character(year),
+    month = as.integer(month),       # "01" -> 1, "02" -> 2
+    month = month.name[month],       # full month names
+    month = as.character(month),
+    president = case_when(
       prez_gop == 1 ~ "Republican",
       prez_dem == 1 ~ "Democratic"
     )
-  ) %>% 
-select(-prez_gop, -prez_dem, -day )
+  ) %>%
+  select(-prez_gop, -prez_dem, -day)
 ```
 ```{r snp}
-snp_df = read_csv("fivethirtyeight_datasets/snp.csv") %>% 
-janitor::clean_names() %>% 
-separate(date, into = c("month", "day", "year"), sep = '/') %>% 
-mutate(
-    month = as.integer(month),
-    day   = as.integer(day),
-    year  = as.integer(year)
-  ) %>% 
+snp_df <- read_csv("fivethirtyeight_datasets/snp.csv") %>%
+  janitor::clean_names() %>%
+  separate(date, into = c("month", "day", "year"), sep = '/') %>%
   mutate(
-    month = factor(month.name[as.integer(month)], 
-                   levels = month.name, 
-                   ordered = TRUE)
-  ) %>% 
-  mutate(year = ifelse(year < 50, 2000 + year, 1900 + year)) %>% 
-  
-  select(-day) %>%         # sort by year then month
+    month = as.integer(month),
+    year  = as.integer(year),
+    year  = ifelse(year < 50, 2000 + year, 1900 + year),
+    month = month.name[month],     # full month names
+    year  = as.character(year),
+    month = as.character(month)
+  ) %>%
+  select(-day) %>%
   select(year, month, everything())
 ```
 ```{r unemploy}
@@ -57,8 +52,16 @@ pivot_longer(
   
   mutate(
     month = month.name[match(tolower(month), tolower(month.abb))],
-    month = factor(month, levels = month.name, ordered = TRUE)
+    month = factor(month, levels = month.name, ordered = TRUE),
+    year  = as.character(year),
+    month = as.character(month)
   )
+```
+```{r merge}
+
+ft_df = left_join(pols_df, snp_df, by = c("year", "month"))
+Sd_df = left_join(ft_df, unemploy_df, by = c("year", "month"))
+
 ```
 
 
