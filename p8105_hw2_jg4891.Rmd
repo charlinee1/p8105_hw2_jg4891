@@ -4,4 +4,28 @@ output: github_document
 date: "2025-09-24"
 ---
 
+```{r}
+library(tidyverse)
+options(tibble.print_min = 5)
+
+```
+## Problem 1
+```{r}
+pols_df = read_csv("fivethirtyeight_datasets/pols-month.csv") %>% 
+janitor::clean_names() %>% 
+separate(mon, into = c("year", "month", "day"), sep = '-') %>% 
+mutate(
+    month = factor(month.name[as.integer(month)], 
+                   levels = month.name, 
+                   ordered = TRUE)
+  ) %>% 
+mutate(president=
+         case_when(
+      prez_gop == 1 ~ "Republican",
+      prez_dem == 1 ~ "Democratic"
+    )
+  ) %>% 
+select(-prez_gop, -prez_dem, -day )
+```
+
 
