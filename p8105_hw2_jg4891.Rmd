@@ -36,8 +36,9 @@ mutate(
     day   = as.integer(day),
     year  = as.integer(year)
   ) %>% 
-  mutate(year = ifelse(year < 50, 2000 + year, 1900 + year))
-
+  mutate(year = ifelse(year < 50, 2000 + year, 1900 + year)) %>% 
+  select(-day) %>%         # sort by year then month
+  select(year, month, everything())
 ```
 
 
