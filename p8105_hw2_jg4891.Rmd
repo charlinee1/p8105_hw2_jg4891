@@ -79,12 +79,24 @@ This merged dataset reflects number of republican governors and senators, democr
   mutate(sheet = "Mr. Trash") |> 
  filter(if_any(everything(), ~ !is.na(.))) |> 
   mutate(sports_balls = as.integer(round(sports_balls)))
-
 ```
 
 
+```{r}
+  pr_df = 
+  readxl::read_excel("Trash.xlsx", sheet="Professor Trash Wheel", range = "A2:M120",na = c("NA", "", "."))|>
+  janitor::clean_names() |> 
+  mutate(sheet = "Professor Trash") |> 
+ filter(if_any(everything(), ~ !is.na(.)))
+```
 
-
+```{r}
+  gw_df = 
+  readxl::read_excel("Trash.xlsx", sheet="Gwynnda Trash Wheel", range = "A2:L265",na = c("NA", "", "."))|>
+  janitor::clean_names() |> 
+  mutate(sheet = "Gwynnda Trash") |> 
+ filter(if_any(everything(), ~ !is.na(.)))
+```
 
 
 
