@@ -70,8 +70,7 @@ Snp_df dataset includes closing values of the S&P stock index from 1950 Jan to 2
 Unemploy_df dataset includes unemployment percentages from  1948 Jan to 2015 Dec. 
 This merged dataset reflects number of republican governors and senators, democratic governors and senators, and president's party, and unemployment percentage from 1947 to 2015.
 
-##Problem 2
-
+## Problem 2
 ```{r}
   mr_df = 
   readxl::read_excel("Trash.xlsx", sheet="Mr. Trash Wheel", range = "A2:N653",na = c("NA", "", "."))|>
@@ -88,18 +87,16 @@ This merged dataset reflects number of republican governors and senators, democr
   readxl::read_excel("Trash.xlsx", sheet="Professor Trash Wheel", range = "A2:M120",na = c("NA", "", "."))|>
   filter(!is.na(Dumpster)) |> 
   janitor::clean_names() |> 
-  mutate(sheet = "Professor Trash") |> 
- filter(if_all(everything(), ~ !is.na(.)))
+  mutate(sheet = "Professor Trash")
 
 ```
 
 ```{r}
   gw_df = 
   readxl::read_excel("Trash.xlsx", sheet="Gwynnda Trash Wheel", range = "A2:L265",na = c("NA", "", "."))|>
-  filter(!is.na(Dumpster)) |> 
+   filter(!is.na(Dumpster)) |> 
   janitor::clean_names() |> 
-  mutate(sheet = "Gwynnda Trash") |> 
- filter(if_all(everything(), ~ !is.na(.)))
+  mutate(sheet = "Gwynnda Trash")
 
 ```
 
@@ -110,14 +107,25 @@ df_tidy = bind_rows(gw_df %>% mutate(year = as.numeric(year)), mr_df%>% mutate(y
   select(sheet, everything())
 
 
+pf_wt <- df_tidy %>% 
+  filter(sheet == "Professor Trash") %>% 
+  summarize(total_weight = sum(weight_tons, na.rm = TRUE)) %>% 
+  pull(total_weight)
 
+gw_cb <- df_tidy %>% 
+  filter(sheet == "Gwynnda Trash", year=="2022", month=="June") %>% 
+  summarize(total_weight = sum(cigarette_butts, na.rm = TRUE)) %>% 
+  pull(total_weight)
 ```
-***merge by date? not sure 
-***Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in the resulting dataset, and give examples of key variables. For available data, what was the total weight of trash collected by Professor Trash Wheel? What was the total number of cigarette butts collected by Gwynnda in June of 2022?
 
-In Mr. Trash wheel data, we have `r nrow(df_tidy %>% filter(sheet == "Mr.Trash"))` observations. In Professor Trash Wheel dataset, we have `r nrow(pr_df)` observations, with the total weight of `r sum(pr_df$weight_tons)` tons of trash. In Gwynnda dataset, we have `r nrow(gw_df)` observations. The total number of cigarette butts collected is `r sum(gw_df$cigarette_butts)`.  "not sure if this is right"
 
-##Problem 3
+Variables definition: Dumpster shows the code for each dumpster in numeric value. Sheet is the dataset that each dumpster belong to, such as Mr. Trash, Professor Trash or Gynnda Trash. Weight_tons is the weight(tons) for each dumpster. Plastic bottles shows up the number of plastic bottles in each dumpster. Homes_powered is the energy that trash generate for home.
+
+In total, we have `r nrow(df_tidy)` observations. 
+In Professor Trash Wheel dataset, we have total weight of trash of  `r pf_wt` tons.
+In Gwynnda dataset, in June 2022, we have a total number of cigarette butts collected is `r gw_cb`. 
+
+## Problem 3
 ```{r}
 z1_df = read_csv("zillow_data/Zip_NYC.csv", na = c("NA", "", ".")) |> 
   janitor::clean_names() |> 
