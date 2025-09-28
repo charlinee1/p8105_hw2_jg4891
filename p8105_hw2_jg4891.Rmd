@@ -6,6 +6,7 @@ date: "2025-09-24"
 
 ```{r setup}
 library(tidyverse)
+library(ggridges)
 options(tibble.print_min = 5)
 
 ```
@@ -71,6 +72,7 @@ Unemploy_df dataset includes unemployment percentages from  1948 Jan to 2015 Dec
 This merged dataset reflects number of republican governors and senators, democratic governors and senators, and president's party, and unemployment percentage from 1947 to 2015.
 
 ## Problem 2
+
 ```{r}
   mr_df = 
   readxl::read_excel("Trash.xlsx", sheet="Mr. Trash Wheel", range = "A2:N653",na = c("NA", "", "."))|>
@@ -100,6 +102,7 @@ This merged dataset reflects number of republican governors and senators, democr
 
 ```
 
+
 ```{r}
 
 df_tidy = bind_rows(gw_df %>% mutate(year = as.numeric(year)), mr_df%>% mutate(year = as.numeric(year)), pr_df%>% mutate(year = as.numeric(year))) |> 
@@ -126,12 +129,11 @@ In Professor Trash Wheel dataset, we have total weight of trash of  `r pf_wt` to
 In Gwynnda dataset, in June 2022, we have a total number of cigarette butts collected is `r gw_cb`. 
 
 ## Problem 3
-```{r}
+```{r warning=FALSE}
 z1_df = read_csv("zillow_data/Zip_NYC.csv", na = c("NA", "", ".")) |> 
   janitor::clean_names() |> 
-  rename(zip_code=region_name) 
-z1_df2 =
-  pivot_longer(z1_df,
+  rename(zip_code=region_name) |> 
+  pivot_longer(
     x2015_01_31:x2024_08_31,
     names_to = "time", 
     values_to = "Index") 
@@ -139,13 +141,29 @@ z1_df2 =
 z2_df <- read_csv("zillow_data/Zipcodes.csv",na = c("NA", "", ".")) |> 
   janitor::clean_names() 
 
-m2_df = left_join(z1_df2, z2_df, by="zip_code") |> 
+m2_df = left_join(z1_df, z2_df, by="zip_code") |> 
   filter(!is.na(Index)) |> 
   select(-region_type,-state_name,-county_name) |> 
   relocate(time, size_rank, Index,  state, state_fips,  city, zip_code, county, county_fips, county_code, region_id, metro, neighborhood, file_date)
 
 ```
+```{r missing zipcodes}
+missing_zips <- setdiff(z2_df$zip_code, z1_df$zip_code) 
+print(missing_zips)
+```
+Rental prices fluctuated dramatically during the COVID-19 pandemic. For all available ZIP codes, compare rental prices in January 2021 to prices in January 2020. Make a table that shows the 10 ZIP codes (along with the borough and neighborhood) with largest drop in price from January 2020 to 2021. Comment.
 
+```{r}
+m3_df = m2_df |> 
+  select(size_rank,Index, zip_code,time) 
+   
+
+
+```
+
+
+
+There are `r nrow(m2_df)` observations, `r length(unique(m2_df$zip_code))` unique zip codes, and `r length(unique(m2_df$neighborhood))` neighborhoods. 171 zipcodes were missing in the zillow dataset because it is too narrow, such as 10464, 10474, 10475 and so on.It is part of military housing so it is not open to public. 
 
 
 
