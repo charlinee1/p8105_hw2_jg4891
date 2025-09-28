@@ -75,28 +75,65 @@ This merged dataset reflects number of republican governors and senators, democr
 ```{r}
   mr_df = 
   readxl::read_excel("Trash.xlsx", sheet="Mr. Trash Wheel", range = "A2:N653",na = c("NA", "", "."))|>
+  filter(!is.na(Dumpster)) |> 
   janitor::clean_names() |> 
   mutate(sheet = "Mr. Trash") |> 
- filter(if_any(everything(), ~ !is.na(.))) |> 
   mutate(sports_balls = as.integer(round(sports_balls)))
+
 ```
 
 
 ```{r}
   pr_df = 
   readxl::read_excel("Trash.xlsx", sheet="Professor Trash Wheel", range = "A2:M120",na = c("NA", "", "."))|>
+  filter(!is.na(Dumpster)) |> 
   janitor::clean_names() |> 
   mutate(sheet = "Professor Trash") |> 
- filter(if_any(everything(), ~ !is.na(.)))
+ filter(if_all(everything(), ~ !is.na(.)))
+
 ```
 
 ```{r}
   gw_df = 
   readxl::read_excel("Trash.xlsx", sheet="Gwynnda Trash Wheel", range = "A2:L265",na = c("NA", "", "."))|>
+  filter(!is.na(Dumpster)) |> 
   janitor::clean_names() |> 
   mutate(sheet = "Gwynnda Trash") |> 
- filter(if_any(everything(), ~ !is.na(.)))
+ filter(if_all(everything(), ~ !is.na(.)))
+
 ```
+
+```{r}
+
+df_tidy = bind_rows(gw_df %>% mutate(year = as.numeric(year)), mr_df%>% mutate(year = as.numeric(year)), pr_df%>% mutate(year = as.numeric(year))) |> 
+  janitor::clean_names() |> 
+  select(sheet, everything())
+
+
+
+```
+***merge by date? not sure 
+***Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in the resulting dataset, and give examples of key variables. For available data, what was the total weight of trash collected by Professor Trash Wheel? What was the total number of cigarette butts collected by Gwynnda in June of 2022?
+
+In Mr. Trash wheel data, we have `r nrow(df_tidy %>% filter(sheet == "Mr.Trash"))` observations. In Professor Trash Wheel dataset, we have `r nrow(pr_df)` observations, with the total weight of `r sum(pr_df$weight_tons)` tons of trash. In Gwynnda dataset, we have `r nrow(gw_df)` observations. The total number of cigarette butts collected is `r sum(gw_df$cigarette_butts)`.  "not sure if this is right"
+
+##Problem 3
+```{r}
+z1_df = read_csv("zillow_data/Zip_NYC.csv", na = c("NA", "", ".")) |> 
+  janitor::clean_names() |> 
+  rename(zip_code=region_name)
+
+z2_df <- read_csv("zillow_data/Zipcodes.csv",na = c("NA", "", ".")) |> 
+  janitor::clean_names()
+
+d1 <- left_join(z1_df, z2_df, by= "zip_code")
+print(d1)
+```
+
+
+
+
+
 
 
 
