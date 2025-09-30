@@ -147,16 +147,44 @@ m2_df = left_join(z1_df, z2_df, by="zip_code") |>
   relocate(time, size_rank, Index,  state, state_fips,  city, zip_code, county, county_fips, county_code, region_id, metro, neighborhood, file_date)
 
 ```
+
 ```{r missing zipcodes}
-missing_zips <- setdiff(z2_df$zip_code, z1_df$zip_code) 
+missing_zips <- setdiff(z2_df$zip_code, z1_df$zip_code)
 print(missing_zips)
 ```
 Rental prices fluctuated dramatically during the COVID-19 pandemic. For all available ZIP codes, compare rental prices in January 2021 to prices in January 2020. Make a table that shows the 10 ZIP codes (along with the borough and neighborhood) with largest drop in price from January 2020 to 2021. Comment.
 
 ```{r}
 m3_df = m2_df |> 
-  select(size_rank,Index, zip_code,time) 
-   
+  janitor::clean_names() |> 
+mutate(
+    date = ymd(str_remove(time, "^x")),                  # "x2020_01_31" -> Date
+    yr   = year(date),
+    mo   = month(date)
+  ) %>%
+  filter(mo == 1, yr %in% c(2020, 2021)) %>%             # keep Jan 2020 & Jan 2021
+  # aggregate to one price per ZIP/year (use mean or median)
+  group_by(zip_code, city, county, yr) %>%
+  summarise(index_sum = sum(index, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = yr, values_from = index_sum, names_prefix = "y") %>%
+  # keep ZIPs that have both years
+  filter(!is.na(y2020), !is.na(y2021)) %>% 
+mutate(
+    drop = y2020 - y2021
+  ) %>%
+  arrange(desc(drop)) %>%   
+  slice_head(n = 10) %>%
+  mutate(
+    y2020     = round(y2020, 1),
+    y2021     = round(y2021, 1),
+    drop      = round(drop, 1)
+  ) %>%
+  select(zip_code, city, county, y2020, y2021, drop)
+
+# show results
+print(m3_df, n = 10)
+
+
 
 
 ```
@@ -165,8 +193,7 @@ m3_df = m2_df |>
 
 There are `r nrow(m2_df)` observations, `r length(unique(m2_df$zip_code))` unique zip codes, and `r length(unique(m2_df$neighborhood))` neighborhoods. 171 zipcodes were missing in the zillow dataset because it is too narrow, such as 10464, 10474, 10475 and so on.It is part of military housing so it is not open to public. 
 
-
-
+Compared rental price in Jan 2020 to Jan 2021, 10007 area has the biggest fall of 912.6 dollars. 
 
 
 
